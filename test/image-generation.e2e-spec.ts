@@ -348,6 +348,166 @@ describe('ImageGenerationController (e2e)', () => {
 
   /**
    * ==========================================================================
+   * TEST GROUP: GET /api/images/health
+   * ==========================================================================
+   *
+   * Menguji endpoint health check untuk memeriksa status koneksi ke Gemini API.
+   * Endpoint ini berguna untuk monitoring dan memastikan service siap menerima request.
+   *
+   * Response structure:
+   * - status: 'healthy' | 'unhealthy'
+   * - geminiApi: { connected: boolean, responseTimeMs?: number, error?: string }
+   * - timestamp: ISO 8601 string
+   */
+  describe('GET /api/images/health', () => {
+    /**
+     * TEST CASE: Harus mengembalikan status 200
+     *
+     * Health check endpoint harus selalu return 200 OK,
+     * baik ketika API healthy maupun unhealthy.
+     * Status kesehatan ditentukan dari body response, bukan HTTP status code.
+     */
+    it('should return 200 status code', () => {
+      return request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+    });
+
+    /**
+     * TEST CASE: Response harus memiliki struktur yang benar
+     *
+     * Validasi bahwa response memiliki semua property yang diperlukan:
+     * - status: Status keseluruhan health check
+     * - geminiApi: Object yang berisi informasi koneksi ke Gemini API
+     * - timestamp: Waktu pengecekan dalam format ISO
+     */
+    it('should have correct response structure', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      // Validasi property level pertama
+      expect(response.body).toHaveProperty('status');
+      expect(response.body).toHaveProperty('geminiApi');
+      expect(response.body).toHaveProperty('timestamp');
+
+      // Validasi struktur geminiApi
+      expect(response.body.geminiApi).toHaveProperty('connected');
+    });
+
+    /**
+     * TEST CASE: Status harus 'healthy' atau 'unhealthy'
+     *
+     * Field status hanya boleh memiliki dua nilai:
+     * - 'healthy': Semua komponen berfungsi dengan baik
+     * - 'unhealthy': Ada masalah dengan salah satu komponen
+     */
+    it('should have valid status value (healthy or unhealthy)', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      expect(['healthy', 'unhealthy']).toContain(response.body.status);
+    });
+
+    /**
+     * TEST CASE: geminiApi.connected harus boolean
+     *
+     * Field connected menunjukkan apakah koneksi ke Gemini API berhasil.
+     * Nilainya harus boolean (true/false), bukan string atau tipe lain.
+     */
+    it('should have boolean connected value in geminiApi', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      expect(typeof response.body.geminiApi.connected).toBe('boolean');
+    });
+
+    /**
+     * TEST CASE: Timestamp harus dalam format ISO 8601
+     *
+     * Timestamp harus valid ISO 8601 string yang bisa di-parse oleh Date.
+     * Contoh format: "2024-01-15T10:30:00.000Z"
+     */
+    it('should have valid ISO timestamp', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      const timestamp = response.body.timestamp;
+      expect(typeof timestamp).toBe('string');
+
+      // Validasi bahwa timestamp bisa di-parse sebagai Date yang valid
+      const parsedDate = new Date(timestamp);
+      expect(parsedDate.toString()).not.toBe('Invalid Date');
+
+      // Validasi format ISO (harus bisa di-convert kembali ke ISO string yang sama)
+      expect(timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/,
+      );
+    });
+
+    /**
+     * TEST CASE: Jika healthy, harus ada responseTimeMs
+     *
+     * Ketika status healthy dan connected true, response harus menyertakan
+     * responseTimeMs yang menunjukkan waktu response dari Gemini API dalam milidetik.
+     */
+    it('should include responseTimeMs when connected', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      // Jika connected, responseTimeMs harus ada dan berupa number
+      if (response.body.geminiApi.connected) {
+        expect(response.body.geminiApi).toHaveProperty('responseTimeMs');
+        expect(typeof response.body.geminiApi.responseTimeMs).toBe('number');
+        expect(response.body.geminiApi.responseTimeMs).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    /**
+     * TEST CASE: Jika unhealthy, harus ada error message
+     *
+     * Ketika status unhealthy, response harus menyertakan pesan error
+     * yang menjelaskan masalah yang terjadi.
+     */
+    it('should include error message when unhealthy', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      // Jika status unhealthy, error harus ada
+      if (response.body.status === 'unhealthy') {
+        expect(response.body.geminiApi).toHaveProperty('error');
+        expect(typeof response.body.geminiApi.error).toBe('string');
+      }
+    });
+
+    /**
+     * TEST CASE: Health check dengan Gemini API tersedia
+     *
+     * Ini adalah positive test yang memverifikasi bahwa ketika Gemini API
+     * berfungsi dengan baik, health check mengembalikan status healthy.
+     * Test ini memiliki timeout lebih lama karena melakukan request ke API eksternal.
+     */
+    it('should return healthy status when Gemini API is available', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/images/health')
+        .expect(200);
+
+      // Jika Gemini API tersedia (API key valid dan service up)
+      // status harus healthy dan connected harus true
+      if (response.body.geminiApi.connected) {
+        expect(response.body.status).toBe('healthy');
+        expect(response.body.geminiApi.responseTimeMs).toBeGreaterThan(0);
+      }
+    }, 30000); // Timeout 30 detik untuk API call ke Gemini
+  });
+
+  /**
+   * ==========================================================================
    * TEST GROUP: GET /api/images/:filename
    * ==========================================================================
    *
