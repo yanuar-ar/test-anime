@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(nest new:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:e2e:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(k6 version:*)",
+      "Bash(brew install:*)"
+    ]
+  }
+}

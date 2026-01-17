@@ -1,0 +1,230 @@
+{
+	"info": {
+		"_postman_id": "anime-illustration-api-collection",
+		"name": "Anime Illustration API",
+		"description": "NestJS backend API for generating anime-style illustrations using Google Gemini AI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Image Generation",
+			"item": [
+				{
+					"name": "Generate Image (Base64)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"prompt\": \"a cute anime girl with blue hair and sparkling eyes\",\n    \"style\": \"modern anime style\",\n    \"aspectRatio\": \"1:1\",\n    \"negativePrompt\": \"blurry, low quality, distorted\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/images/generate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "images", "generate"]
+						},
+						"description": "Generate an anime illustration and return as base64 encoded image.\n\n**Request Body:**\n- `prompt` (required): Description of the image to generate\n- `style` (optional): Anime style (see /styles endpoint)\n- `aspectRatio` (optional): Image aspect ratio (see /aspect-ratios endpoint)\n- `negativePrompt` (optional): Things to avoid in the image"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"prompt\": \"a cute anime girl with blue hair\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/images/generate",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "images", "generate"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"base64\": \"iVBORw0KGgoAAAANSUhEUgAA...\",\n        \"mimeType\": \"image/png\",\n        \"prompt\": \"Create a high-quality anime illustration: a cute anime girl with blue hair, modern anime style, highly detailed, vibrant colors, professional artwork, 4k quality\",\n        \"revisedPrompt\": \"Generated anime illustration of a girl with blue hair\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Generate and Save Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"prompt\": \"a samurai warrior in battle stance under cherry blossoms\",\n    \"style\": \"studio ghibli style\",\n    \"aspectRatio\": \"16:9\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/images/generate-and-save",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "images", "generate-and-save"]
+						},
+						"description": "Generate an anime illustration and save it to the server disk.\n\nReturns the file path and URL to access the saved image."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"prompt\": \"a samurai warrior\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/images/generate-and-save",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "images", "generate-and-save"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": true,\n    \"data\": {\n        \"filePath\": \"/path/to/generated-images/anime_1705512345678.png\",\n        \"url\": \"/images/anime_1705512345678.png\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Reference Data",
+			"item": [
+				{
+					"name": "Get Available Styles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/images/styles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "images", "styles"]
+						},
+						"description": "Get all available anime styles that can be used in image generation."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/images/styles",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "images", "styles"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"styles\": {\n        \"MODERN\": \"modern anime style\",\n        \"CLASSIC\": \"classic 90s anime style\",\n        \"CHIBI\": \"chibi anime style\",\n        \"REALISTIC\": \"semi-realistic anime style\",\n        \"GHIBLI\": \"studio ghibli style\",\n        \"SHONEN\": \"shonen anime style\",\n        \"SHOUJO\": \"shoujo anime style\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Aspect Ratios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/images/aspect-ratios",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "images", "aspect-ratios"]
+						},
+						"description": "Get all available aspect ratios for image generation."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/images/aspect-ratios",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "images", "aspect-ratios"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"aspectRatios\": {\n        \"SQUARE\": \"1:1\",\n        \"PORTRAIT\": \"9:16\",\n        \"LANDSCAPE\": \"16:9\",\n        \"WIDE\": \"4:3\",\n        \"TALL\": \"3:4\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Image Retrieval",
+			"item": [
+				{
+					"name": "Get Generated Image",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/images/:filename",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "images", ":filename"],
+							"variable": [
+								{
+									"key": "filename",
+									"value": "anime_1705512345678.png",
+									"description": "The filename of the generated image"
+								}
+							]
+						},
+						"description": "Retrieve a previously generated and saved image by filename.\n\nSupported formats: PNG, JPG, JPEG, WebP"
+					},
+					"response": [
+						{
+							"name": "Image Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/images/nonexistent.png",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "images", "nonexistent.png"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"body": "{\n    \"success\": false,\n    \"message\": \"Image not found\"\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+}
