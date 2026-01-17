@@ -8,7 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { ImageGenerationService, GeneratedImage } from './image-generation.service';
+import { ImageGenerationService, GeneratedImage, HealthCheckResult } from './image-generation.service';
 import { GenerateImageDto, AnimeStyle, AspectRatio } from './dto/generate-image.dto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -49,6 +49,11 @@ export class ImageGenerationController {
   @Get('aspect-ratios')
   getAspectRatios(): { aspectRatios: typeof AspectRatio } {
     return { aspectRatios: AspectRatio };
+  }
+
+  @Get('health')
+  async checkHealth(): Promise<HealthCheckResult> {
+    return this.imageGenerationService.checkHealth();
   }
 
   @Get(':filename')

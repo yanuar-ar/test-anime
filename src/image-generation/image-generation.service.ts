@@ -12,6 +12,16 @@ export interface GeneratedImage {
   revisedPrompt?: string;
 }
 
+export interface HealthCheckResult {
+  status: 'healthy' | 'unhealthy';
+  geminiApi: {
+    connected: boolean;
+    responseTimeMs?: number;
+    error?: string;
+  };
+  timestamp: string;
+}
+
 @Injectable()
 export class ImageGenerationService {
   private genAI: GoogleGenAI;
@@ -121,5 +131,51 @@ export class ImageGenerationService {
     }
 
     return fullPrompt;
+  }
+
+  async checkHealth(): Promise<HealthCheckResult> {
+    const startTime = Date.now();
+    const timestamp = new Date().toISOString();
+
+    try {
+      const response = await this.genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: 'Say "ok" in one word.',
+      });
+
+      const responseTimeMs = Date.now() - startTime;
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (text) {
+        return {
+          status: 'healthy',
+          geminiApi: {
+            connected: true,
+            responseTimeMs,
+          },
+          timestamp,
+        };
+      }
+
+      return {
+        status: 'unhealthy',
+        geminiApi: {
+          connected: false,
+          responseTimeMs,
+          error: 'No response from API',
+        },
+        timestamp,
+      };
+    } catch (error) {
+      return {
+        status: 'unhealthy',
+        geminiApi: {
+          connected: false,
+          responseTimeMs: Date.now() - startTime,
+          error: error.message,
+        },
+        timestamp,
+      };
+    }
   }
 }
